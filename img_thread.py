@@ -1,4 +1,3 @@
-
 import threading
 import os
 import fnmatch
@@ -11,7 +10,7 @@ os.chdir(path)
 if __name__ == '__main__':
     try:
         path1  = sys.argv[1]
-        path2 = 'tn_img_'+sys.argv[1]
+        path2 = 'resized_'+sys.argv[1]
     except IndexError:
         print "\nPlease enter a directory.\nUsage example: python img_thread.py 'directory'\n\n\n"
 npath1 = path+path1
@@ -36,6 +35,12 @@ def resize(file):
     file_name, ext = file.split('.')
     os.chdir(npath1)
     im = Image.open(file)
+    if '-' in factor:
+        Hpixel = im.size[0]/(-1*int(factor))
+        Wpixel = im.size[1]/(-1*int(factor))
+    else :
+        Hpixel = im.size[0]*int(factor)
+        Wpixel = im.size[1]*int(factor)
     im.resize((Hpixel,Wpixel)).save(file_name + 't.jpg', "JPEG")
     nim= Image.open("%st.jpg" %file_name)
     print '\tresized image'
@@ -53,23 +58,23 @@ def rename_img(file):
     file_name, ext = file.split('.')
     os.chdir(npath2)
     new_file= file_name+'t.jpg'
-    os.rename(new_file, file_name+'.jpg')
-    print '\trenamed image'
+    if fnmatch.fnmatch(new_file,'*t.jpg'):
+        os.rename(new_file, file_name+'.jpg')
+        print '\trenamed image'
 
 def remove_img_copy(file):
     file_name, ext =file.split('.')
     os.chdir(npath1)
     new_file = file_name+'t.jpg'
-    new_path = npath1+'/'+new_file 
-    os.remove(new_path)
-    print '\tremoved copy'
+    new_path = npath1+'/'+new_file
+    if fnmatch.fnmatch(new_file,'*t.jpg'): 
+        os.remove(new_path)
+        print '\tremoved copy'
 
 threadLock = threading.Lock()
-Hpixel = int(raw_input('Enter height of pixels: \n'))
-Wpixel = int(raw_input('Enter width of pixels: \n'))
+factor = raw_input("Enter the scaling factor\nIncrease: +\nDecrease: -\n")
 
 for file in os.listdir(path1):
-    
     threads= []
     if fnmatch.fnmatch(file,'*.jpg'):
         print "Image : ", file
